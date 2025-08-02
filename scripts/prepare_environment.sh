@@ -54,10 +54,22 @@ mkdir -p "$MOUNT_POINT"
 # Get partition information
 PARTITION_INFO=$(fdisk -l "$EXTRACTED_IMAGE")
 SECTOR_SIZE=$(echo "$PARTITION_INFO" | grep "Sector size" | awk '{print $4}')
-ROOT_PART_START=$(echo "$PARTITION_INFO" | grep "Linux filesystem" | awk '{print $2}')
+# Look for the first partition (should be the main partition)
+ROOT_PART_START=$(echo "$PARTITION_INFO" | grep "${EXTRACTED_IMAGE}1" | awk '{print $2}')
 
 # Calculate offset
 OFFSET=$((ROOT_PART_START * SECTOR_SIZE))
+
+# Debug output
+echo "Debug: Sector size: $SECTOR_SIZE"
+echo "Debug: Root partition start: $ROOT_PART_START"
+echo "Debug: Calculated offset: $OFFSET"
+
+# Check if already mounted and unmount if necessary
+if mountpoint -q "$MOUNT_POINT"; then
+    echo "Image already mounted, unmounting first..."
+    umount "$MOUNT_POINT"
+fi
 
 # Mount image
 echo "Mounting image..."
@@ -78,21 +90,28 @@ apt-get install -y \
     libssl-dev \
     libelf-dev \
     bc \
-    kmod
+    kmod \
+    libncurses-dev \
+    pkg-config
 
 # Clone kernel source if not already present
 if [ ! -d "$KERNEL_SRC_DIR" ]; then
     echo "Cloning kernel source..."
     git clone --depth 1 https://github.com/Joshua-Riek/linux-rockchip.git "$KERNEL_SRC_DIR"
     cd "$KERNEL_SRC_DIR"
-    git checkout rk3588
+    # The repository now uses 'noble' as the main branch instead of 'rk3588'
+    echo "Using branch: $(git branch --show-current)"
     echo_success "Kernel source cloned successfully"
+    # Return to build directory
+    cd ..
 fi
 
 # Setup kernel build configuration
 cd "$KERNEL_SRC_DIR"
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- defconfig
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- menuconfig
+# Note: menuconfig is interactive, skip for automated builds
+# Run 'make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- menuconfig' manually if needed
+echo "Kernel configuration set to default (defconfig)"
 
 echo_success "Build environment setup complete"
 echo "You can now proceed with kernel modifications"

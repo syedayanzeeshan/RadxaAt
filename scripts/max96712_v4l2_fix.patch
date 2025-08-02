@@ -1,0 +1,57 @@
+--- a/drivers/media/i2c/max96712.c
++++ b/drivers/media/i2c/max96712.c
+@@ -309,10 +309,10 @@ static const struct max96712_mode supported_modes_4lane[] = {
+ 		.link_freq_idx = 20,
+ 		.bus_fmt = MEDIA_BUS_FMT_UYVY8_2X8,
+ 		.bpp = 16,
+-		.vc[PAD0] = V4L2_MBUS_CSI2_CHANNEL_0,
+-		.vc[PAD1] = V4L2_MBUS_CSI2_CHANNEL_1,
+-		.vc[PAD2] = V4L2_MBUS_CSI2_CHANNEL_2,
+-		.vc[PAD3] = V4L2_MBUS_CSI2_CHANNEL_3,
++		.vc[PAD0] = 0,
++		.vc[PAD1] = 1,
++		.vc[PAD2] = 2,
++		.vc[PAD3] = 3,
+ 	},
+ };
+ 
+@@ -1680,21 +1680,20 @@ static int max96712_g_mbus_config(struct v4l2_subdev *sd, unsigned int pad,
+ 	struct max96712 *max96712 = v4l2_get_subdevdata(sd);
+ 	u32 val = 0;
+ 	u8 data_lanes = max96712->bus_cfg.bus.mipi_csi2.num_data_lanes;
++	int i;
+ 
+ 	val |= V4L2_MBUS_CSI2_CONTINUOUS_CLOCK;
+-	val |= (1 << (data_lanes - 1));
+-	switch (data_lanes) {
+-	case 4:
+-		val |= V4L2_MBUS_CSI2_CHANNEL_3;
+-		fallthrough;
+-	case 3:
+-		val |= V4L2_MBUS_CSI2_CHANNEL_2;
+-		fallthrough;
+-	case 2:
+-		val |= V4L2_MBUS_CSI2_CHANNEL_1;
+-		fallthrough;
+-	case 1:
+-	default:
+-		val |= V4L2_MBUS_CSI2_CHANNEL_0;
+-		break;
++
++	config->type = V4L2_MBUS_CSI2_DPHY;
++	config->bus.mipi_csi2.flags = val;
++	config->bus.mipi_csi2.num_data_lanes = data_lanes;
++	config->bus.mipi_csi2.clock_lane = 0; /* Usually lane 0 for clock */
++
++	/* Set up data lane mapping */
++	for (i = 0; i < data_lanes && i < V4L2_MBUS_CSI2_MAX_DATA_LANES; i++) {
++		config->bus.mipi_csi2.data_lanes[i] = i + 1; /* Lanes are 1-indexed */
++		config->bus.mipi_csi2.lane_polarities[i + 1] = false; /* Normal polarity */
+ 	}
++	config->bus.mipi_csi2.lane_polarities[0] = false; /* Clock lane polarity */
+ 
+-	config->type = V4L2_MBUS_CSI2_DPHY;
+-	config->flags = val;
+-
+ 	return 0;
+ }

@@ -32,6 +32,7 @@ fi
 # Ensure we're in the right directory
 cd "$(dirname "$0")/.."
 WORK_DIR=$(pwd)
+cd "$WORK_DIR/build"
 
 # Install required packages
 echo "Installing build dependencies..."
