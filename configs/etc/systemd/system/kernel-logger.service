@@ -8,8 +8,8 @@ ExecStart=/usr/bin/python3 /usr/local/bin/kernel_logger_daemon.py
 Restart=always
 RestartSec=5
 Environment=KERNEL_LOG_PATH=/var/log/kernel
-Environment=KERNEL_LOG_LEVEL=debug
-Environment=KERNEL_LOG_MAX_SIZE=100M
+Environment=KERNEL_LOG_LEVEL=DEBUG
+Environment=KERNEL_LOG_MAX_SIZE=104857600
 Environment=KERNEL_LOG_ROTATE_COUNT=5
 
 # Security settings

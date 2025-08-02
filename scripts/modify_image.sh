@@ -4,9 +4,10 @@
 set -e
 
 # Configuration
-IMAGE_URL="https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-22.04-preinstalled-desktop-arm64-rock-5b-plus.img.xz"
-IMAGE_NAME="ubuntu-22.04-preinstalled-desktop-arm64-rock-5b-plus.img.xz"
-EXTRACTED_IMAGE="ubuntu-22.04-preinstalled-desktop-arm64-rock-5b-plus.img"
+# Use the new Rock 5B+ Bookworm KDE image from Downloads
+IMAGE_NAME="rock-5b-plus_bookworm_kde_b2.output.img.xz"
+EXTRACTED_IMAGE="rock-5b-plus_bookworm_kde_b2.output.img"
+IMAGE_PATH="/home/yan/Downloads/$IMAGE_NAME"
 MOUNT_POINT="/mnt/rock5b_image"
 KERNEL_VERSION="5.10.0-rock5b-enhanced"
 
@@ -51,11 +52,15 @@ trap cleanup EXIT
 mkdir -p "$WORK_DIR/build"
 cd "$WORK_DIR/build"
 
-# Download image if not exists
+# Copy image from Downloads if not exists in build directory
 if [ ! -f "$IMAGE_NAME" ]; then
-    echo "Downloading Ubuntu image..."
-    wget "$IMAGE_URL" -O "$IMAGE_NAME"
-    echo_success "Image downloaded successfully"
+    if [ -f "$IMAGE_PATH" ]; then
+        echo "Copying image from Downloads..."
+        cp "$IMAGE_PATH" "$IMAGE_NAME"
+        echo_success "Image copied from Downloads"
+    else
+        echo_error "Image not found at $IMAGE_PATH"
+    fi
 fi
 
 # Extract image if not already extracted

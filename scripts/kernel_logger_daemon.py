@@ -16,7 +16,7 @@ class KernelLoggerDaemon:
     def setup_logging(self):
         log_path = os.getenv("KERNEL_LOG_PATH", "/var/log/kernel")
         log_level = os.getenv("KERNEL_LOG_LEVEL", "DEBUG")
-        max_size = os.getenv("KERNEL_LOG_MAX_SIZE", "100MB")
+        max_size = int(os.getenv("KERNEL_LOG_MAX_SIZE", "104857600"))  # 100MB in bytes
         rotate_count = int(os.getenv("KERNEL_LOG_ROTATE_COUNT", "5"))
         
         # Ensure log directory exists

@@ -9,3 +9,7 @@ Module.symvers
 build/
 *.img
 *.img.xz
+
+# Ignore embedded git repositories
+complete-package/
+linux/
